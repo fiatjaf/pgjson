@@ -1,0 +1,5 @@
+node_modules
+*.swo
+*.swp
+.env
+npm-debug.log

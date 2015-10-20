@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "0.10"
+  - "4.1"
+  - "stable"
+addons:
+  postgresql: "9.4"
+before_script:
+  - psql -c 'create database pgjson_test;' -U postgres
+env:
+  - TEST_DATABASE_URL=postgres:///pgjson_test
