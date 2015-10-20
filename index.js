@@ -1,7 +1,6 @@
 var Promise = require('lie')
 var cuid = require('cuid')
 
-require('pg-promise/node_modules/pg').defaults.ssl = true
 var pgp = require('pg-promise')({promiseLib: Promise})
 
 var handle = function (message) {
