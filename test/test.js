@@ -98,6 +98,13 @@ describe('CRUD', function () {
         assert.lengthOf(deletes, 3, 'deleted everything correctly.')
       }).then(done).catch(done)
     })
-  })
 
+    it('fetching inexistent doc', function (done) {
+      pj.get('nothing')
+      .then(function (doc) {
+        assert.equal(doc, null)
+      }).then(done).catch(done)
+    })
+
+  })
 })

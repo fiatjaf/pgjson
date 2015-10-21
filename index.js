@@ -53,7 +53,7 @@ var pgjson = (function () {
       return db.query('SELECT doc FROM pgjson.main WHERE id = $1', [id])
     })
     .then(function (rows) {
-      return rows[0].doc
+      return rows[0] ? rows[0].doc : null
     })
     .catch(handle('problem getting doc'))
   }
