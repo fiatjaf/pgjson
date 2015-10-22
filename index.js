@@ -23,13 +23,13 @@ var pgjson = (function () {
     doc._id = cuid()
 
     return this.wait.then(function () {
-      return db.query(
+      return db.one(
         'INSERT INTO pgjson.main (id, doc) VALUES ($1, $2) RETURNING id',
         [doc._id, doc]
       )
     })
-    .then(function (rows) {
-      return {ok: true, id: rows[0].id}
+    .then(function (row) {
+      return {ok: true, id: row.id}
     })
     .catch(handle('problem posting doc'))
   }
@@ -50,10 +50,10 @@ var pgjson = (function () {
     var db = this.db
 
     return this.wait.then(function () {
-      return db.query('SELECT doc FROM pgjson.main WHERE id = $1', [id])
+      return db.oneOrNone('SELECT doc FROM pgjson.main WHERE id = $1', [id])
     })
-    .then(function (rows) {
-      return rows[0] ? rows[0].doc : null
+    .then(function (row) {
+      return row ? row.doc : null
     })
     .catch(handle('problem getting doc'))
   }
@@ -62,10 +62,10 @@ var pgjson = (function () {
     var db = this.db
 
     return this.wait.then(function () {
-      return db.query('SELECT count(*) AS c FROM pgjson.main')
+      return db.one('SELECT count(*) AS c FROM pgjson.main')
     })
-    .then(function (rows) {
-      return rows[0].c
+    .then(function (row) {
+      return row.c
     })
     .catch(handle('problem counting docs'))
   }
@@ -88,7 +88,7 @@ var pgjson = (function () {
     return this.wait.then(function () {
       return db.query('DELETE FROM pgjson.main WHERE id = $1', [id])
     })
-    .then(function (rows) {
+    .then(function () {
       return {ok: true}
     })
     .catch(handle('problem deleting doc'))
@@ -109,20 +109,14 @@ var pgjson = (function () {
         $$ \n\
         BEGIN \n\
             LOOP \n\
-                -- first try to update the key \n\
-                -- note that id must be unique \n\
                 UPDATE pgjson.main SET doc = data WHERE id = key; \n\
                 IF found THEN \n\
                     RETURN; \n\
                 END IF; \n\
-                -- not there, so try to insert the key \n\
-                -- if someone else inserts the same key concurrently, \n\
-                -- we could get a unique-key failure \n\
                 BEGIN \n\
                     INSERT INTO pgjson.main(id, doc) VALUES (key, data); \n\
                     RETURN; \n\
                 EXCEPTION WHEN unique_violation THEN \n\
-                    -- do nothing, and loop to try the UPDATE again \n\
                 END; \n\
             END LOOP; \n\
         END; \n\
