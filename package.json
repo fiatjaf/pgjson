@@ -4,8 +4,8 @@
   "description": "Postgres as a simple JSON document store.",
   "main": "index.js",
   "dependencies": {
-    "cuid": "^1.3.8",
-    "lie": "^3.0.1",
+    "cuid": "*",
+    "lie": "*",
     "pg-promise": "^2.1.0"
   },
   "devDependencies": {
@@ -33,7 +33,8 @@
     "nosql",
     "database",
     "store",
-    "sql"
+    "sql",
+    "jsonb"
   ],
   "bugs": {
     "url": "https://github.com/fiatjaf/pgjson/issues"
