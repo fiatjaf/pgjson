@@ -62,7 +62,7 @@ Which means you can use this same data later, create indexes on specific JSON fi
 
 ### DB.get(string _or_ array): Promise -> doc
 
-accepts the id, as string, of some document as a parameter, or an array of ids, and returns a promise for the raw stored JSON document. If passed an array of ids, returns the documents it could find in the correct order, however ignoring the ids it could not find. If the document is not found the promise resolves to `null`.
+accepts the id, as string, of some document as a parameter, or an array of ids, and returns a promise for the raw stored JSON document. If passed an array of ids, the promise resolves to an array filled with the documents it could find, or null when it could not, in the correct order. If passed a single id and the target document is not found the promise resolves to `null`.
 
 ### DB.post(object _or_ array): Promise -> response
 

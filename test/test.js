@@ -122,6 +122,11 @@ describe('basic functions', function () {
         assert.equal(docs.length, 3)
         assert.deepEqual(docs.map(function (d) { return d.fruit }), ['banana', 'passion', 'goiaba'])
         assert.deepEqual(docs.map(function (d) { return d._id }), ids, 'successfully fetched the three docs in order')
+        return pj.get([ids[0], 'none', ids[1]])
+      }).then(function (docs) {
+        assert.equal(docs[0].fruit, 'banana')
+        assert.equal(docs[1], null, 'got null for a doc id which could not be found.')
+        assert.equal(docs[2].fruit, 'passion')
         return pj.del(ids)
       }).then(function (deletes) {
         assert.equal(deletes.ok, true)
