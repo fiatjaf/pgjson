@@ -8,11 +8,9 @@ Welcome to PGJSON!
 ```javascript
 var db = new (require('pgjson'))('postgres:///db')
 
-Promise.resolve().then(function () {
-  return db.post({
-    name: 'tomato',
-    uses: ['tomato juice']
-  })
+db.post({
+  name: 'tomato',
+  uses: ['tomato juice']
 })
 .then(function (res) {
   console.log(res) /* {ok: true, id: 'xwkfi23syw'} */
