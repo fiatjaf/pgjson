@@ -116,6 +116,33 @@ var pgjson = (function () {
     .catch(handle('problem deleting doc'))
   }
 
+  pgjson.prototype.query = function (opts) {
+    opts = opts || {}
+    var db = this.db
+
+    return this.wait.then(function () {
+      if (opts.orderby) {
+        var o = opts.orderby
+        var r = opts.descending ? 'DESC' : 'ASC'
+        var terms = o.split(/[\.[]/).map(function (t) {
+          if (t.slice(-1)[0] == ']') {
+            t = t.slice(0, -1)
+            if (!isNaN(parseInt(t))) {
+              return t
+            }
+          }
+          return "'" + t + "'"
+        })
+        var criteria = terms.join('->')
+        return db.manyOrNone("SELECT doc FROM pgjson.main ORDER BY doc->" + criteria + ' ' + r + ", doc->'_id' " + r)
+      }
+      return db.manyOrNone('SELECT doc FROM pgjson.main ORDER BY id')
+    })
+    .then(function (rows) {
+      return rows.map(function (r) { return r.doc })
+    })
+  }
+
   pgjson.prototype.count = function () {
     var db = this.db
 

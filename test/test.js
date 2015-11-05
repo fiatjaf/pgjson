@@ -123,16 +123,61 @@ describe('basic functions', function () {
         assert.deepEqual(docs.map(function (d) { return d.fruit }), ['banana', 'passion', 'goiaba'])
         assert.deepEqual(docs.map(function (d) { return d._id }), ids, 'successfully fetched the three docs in order')
         return pj.get([ids[0], 'none', ids[1]])
-      }).then(function (docs) {
+      })
+      .then(function (docs) {
         assert.equal(docs[0].fruit, 'banana')
         assert.equal(docs[1], null, 'got null for a doc id which could not be found.')
         assert.equal(docs[2].fruit, 'passion')
         return pj.del(ids)
-      }).then(function (deletes) {
+      })
+      .then(function (deletes) {
         assert.equal(deletes.ok, true)
       }).then(done).catch(done)
     })
   })
 
+  describe('fancy queries', function () {
+    it('should fetch all docs, sorted by id', function (done) {
+      Promise.all([{_id: 'a', word: 'azul'}, {_id: 'b', word: 'banana'}].map(function (doc) {
+        return pj.put(doc)
+      }))
+      .then(function () {
+        return pj.query()
+      })
+      .then(function (docs) {
+        assert.deepEqual(docs, [{_id: 'a', word: 'azul'}, {_id: 'b', word: 'banana'}])
+      }).then(done).catch(done)
+    })
+
+    it('should sort by any key', function (done) {
+      Promise.all([
+        {_id: 'a', word: 'laranja', props: {coolness: 23}, j: false},
+        {_id: 'b', word: 'arab', props: {coolness: 18}, letters: ['a', 'r']},
+        {_id: 'c', word: 'laec', props: {}, j: false, letters: ['l', 'a']},
+        {_id: 'd', word: 'jalad', j: true, letters: ['j', 'a']}
+      ].map(function (doc) { return pj.put(doc) }))
+      .then(function () {
+        return pj.query({orderby: 'word'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['b', 'd', 'c', 'a'])
+        return pj.query({orderby: 'props.coolness'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['b', 'a', 'c', 'd'])
+        return pj.query({orderby: 'j', descending: true})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['b', 'd', 'c', 'a'])
+        return pj.query({orderby: 'letters[1]', descending: true})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['a', 'b', 'd', 'c'])
+      }).then(done).catch(done)
+    })
   })
 })
