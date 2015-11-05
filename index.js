@@ -94,7 +94,7 @@ var pgjson = (function () {
     var db = this.db
 
     return this.wait.then(function () {
-      return db.many('SELECT doc FROM unnest(ARRAY[$1]) WITH ORDINALITY AS u(id, ord) LEFT JOIN pgjson.main AS m ON m.id = u.id ORDER BY u.ord', [ids])
+      return db.many('SELECT doc FROM unnest($1) WITH ORDINALITY AS u(id, ord) LEFT JOIN pgjson.main AS m ON m.id = u.id ORDER BY u.ord', [ids])
     })
     .then(function (rows) {
       return rows.map(function (r) { return r.doc })
