@@ -19,6 +19,10 @@ var pgjson = (function () {
   }
 
   pgjson.prototype.post = function (doc) {
+    if (Array.isArray(doc)) {
+      return pgjson.prototype.postBulk.apply(this, arguments)
+    }
+
     var db = this.db
     doc._id = cuid()
 
@@ -34,6 +38,31 @@ var pgjson = (function () {
     .catch(handle('problem posting doc'))
   }
 
+  pgjson.prototype.postBulk = function (docs) {
+    var db = this.db
+
+    var ids = []
+    var valuesq = []
+    var valuesv = []
+    for (var i = 0; i < docs.length; i++) {
+      var doc = docs[i]
+      var j = 1 + i*2
+      var id = cuid()
+      doc._id = id
+      ids.push(id)
+      valuesv.push(id)
+      valuesv.push(doc)
+      valuesq.push('($' + j + ',' + '$' + (j+1) + ')')
+    }
+
+    return this.wait.then(function () {
+      sql = "INSERT INTO pgjson.main (id, doc) VALUES " + valuesq.join(',')
+      return db.none(sql, valuesv)
+    }).then(function () {
+      return {ok: true, ids: ids}
+    }).catch(handle('problem posting docs'))
+  }
+
   pgjson.prototype.put = function (doc) {
     var db = this.db
 
@@ -47,8 +76,11 @@ var pgjson = (function () {
   }
 
   pgjson.prototype.get = function (id) {
-    var db = this.db
+    if (Array.isArray(id)) {
+      return pgjson.prototype.getBulk.apply(this, arguments)
+    }
 
+    var db = this.db
     return this.wait.then(function () {
       return db.oneOrNone('SELECT doc FROM pgjson.main WHERE id = $1', [id])
     })
@@ -56,6 +88,32 @@ var pgjson = (function () {
       return row ? row.doc : null
     })
     .catch(handle('problem getting doc'))
+  }
+
+  pgjson.prototype.getBulk = function (ids) {
+    var db = this.db
+
+    return this.wait.then(function () {
+      return db.many('SELECT doc FROM unnest(ARRAY[$1]) WITH ordinality AS u(id, ord) JOIN pgjson.main AS m ON m.id = u.id ORDER BY u.ord', [ids])
+    })
+    .then(function (rows) {
+      return rows.map(function (r) { return r.doc })
+    })
+    .catch(handle('problem getting docs'))
+  }
+
+  pgjson.prototype.del = function (id) {
+    var db = this.db
+    return this.wait.then(function () {
+      if (Array.isArray(id)) {
+        return db.none('DELETE FROM pgjson.main WHERE id = ANY ($1)', [id])
+      }
+      return db.none('DELETE FROM pgjson.main WHERE id = $1', [id])
+    })
+    .then(function () {
+      return {ok: true}
+    })
+    .catch(handle('problem deleting doc'))
   }
 
   pgjson.prototype.count = function () {
@@ -80,18 +138,6 @@ var pgjson = (function () {
       return rows.map(function (r) { return r.id })
     })
     .catch(handle('problem listing ids'))
-  }
-
-  pgjson.prototype.del = function (id) {
-    var db = this.db
-
-    return this.wait.then(function () {
-      return db.query('DELETE FROM pgjson.main WHERE id = $1', [id])
-    })
-    .then(function () {
-      return {ok: true}
-    })
-    .catch(handle('problem deleting doc'))
   }
 
   pgjson.prototype.init = function () {

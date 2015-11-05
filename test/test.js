@@ -3,7 +3,7 @@ var Promise = require('lie')
 var cuid = require('cuid')
 var PGJSON = require('..')
 
-describe('CRUD', function () {
+describe('basic functions', function () {
   var pj
 
   before(function () {
@@ -15,7 +15,7 @@ describe('CRUD', function () {
     pj.init()
   })
 
-  describe('post', function () {
+  describe('CRUD', function () {
     it('should create a new doc', function (done) {
       pj.post({
         banana: 23,
@@ -105,6 +105,29 @@ describe('CRUD', function () {
         assert.equal(doc, null)
       }).then(done).catch(done)
     })
+  })
+
+  describe('transactions', function () {
+    it('should bulk create, then bulk fetch, then bulk delete', function (done) {
+      var ids
+
+      pj.post([{fruit: 'banana'}, {fruit: 'passion'}, {fruit: 'goiaba'}])
+      .then(function (res) {
+        assert.equal(res.ok, true)
+        assert.equal(res.ids.length, 3, 'posted three docs at the same time and got three ids.')
+        ids = res.ids
+        return pj.get(res.ids)
+      })
+      .then(function (docs) {
+        assert.equal(docs.length, 3)
+        assert.deepEqual(docs.map(function (d) { return d.fruit }), ['banana', 'passion', 'goiaba'])
+        assert.deepEqual(docs.map(function (d) { return d._id }), ids, 'successfully fetched the three docs in order')
+        return pj.del(ids)
+      }).then(function (deletes) {
+        assert.equal(deletes.ok, true)
+      }).then(done).catch(done)
+    })
+  })
 
   })
 })

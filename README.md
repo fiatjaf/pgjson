@@ -60,21 +60,21 @@ Which means you can use this same data later, create indexes on specific JSON fi
 
 `options` is anything [pg](https://github.com/brianc/node-postgres/wiki/Client#constructors) can take: a connection string, a domain socket folder or a config object. See the link for more details.
 
-### DB.get(string): Promise -> doc
+### DB.get(string _or_ array): Promise -> doc
 
-accepts the id of some document as a parameter and returns a promise for the raw stored JSON document. If the document is not found the promise resolves to `null`.
+accepts the id, as string, of some document as a parameter, or an array of ids, and returns a promise for the raw stored JSON document. If passed an array of ids, returns the documents it could find in the correct order, however ignoring the ids it could not find. If the document is not found the promise resolves to `null`.
 
-### DB.post(object): Promise -> response
+### DB.post(object _or_ array): Promise -> response
 
-accepts an object, saves it with a random `._id` and returns a promise for a response which will contain `{ok: true, id: <the random id>}`. If the passed object has an `_id` property it will be discarded.
+accepts an object or an array of objects corresponding to all the documents you intend to create. Saves them with a random `.\_id` each and returns a promise for a response which will contain `{ok: true, id: <the random id>}`. If an array of objects was passed, instead returns `{ok: true, ids: [<id>, <id>...]}` with the ids in the correct order. If any passed object has an `\_id` property this property will be discarded.
 
 ### DB.put(document): Promise -> response
 
-same as .post, but instead of creating a new document with a random id, this expects a complete _document_, which is to say an object with an `_id` property. Updates (or creates, if none is found) the document with the specified id.
+same as .post, but instead of creating a new document with a random id, this expects a complete _document_, which is to say an object with an `\_id` property. Updates (or creates, if none is found) the document with the specified id.
 
-### DB.del(string): Promise -> response
+### DB.del(string _or_ array): Promise -> response
 
-accepts an id, as string. The response is an object of format `{ok: true}`.
+accepts an id, as string, or an array of strings corresponding to all the keys you want to delete. The response is an object of format `{ok: true}`.
 
 ### DB.allIds(): Promise -> array
 
