@@ -1,6 +1,6 @@
 {
   "name": "pgjson",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Postgres as a simple JSON document store.",
   "main": "index.js",
   "dependencies": {

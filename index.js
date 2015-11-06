@@ -119,12 +119,13 @@ var pgjson = (function () {
   pgjson.prototype.query = function (opts) {
     opts = opts || {}
     var o = opts.orderby
-    var r = opts.descending ? 'DESC' : 'ASC'
-    var l = opts.limit || 1000
-    var f = opts.offset || 0
-
     var db = this.db
     return this.wait.then(function () {
+      var params = {
+        limit: opts.limit || 1000,
+        offset: opts.offset || 0,
+        order: opts.descending ? 'DESC' : 'ASC'
+      }
       if (opts.orderby) {
         var terms = o.split(/[\.[]/).map(function (t) {
           if (t.slice(-1)[0] == ']') {
@@ -135,10 +136,10 @@ var pgjson = (function () {
           }
           return "'" + t + "'"
         })
-        var criteria = terms.join('->')
-        return db.manyOrNone("SELECT doc FROM pgjson.main ORDER BY doc->" + criteria + ' ' + r + ", doc->'_id' " + r + " LIMIT $1 OFFSET $2", [l, f])
+        params.criteria = terms.join('->')
+        return db.any("SELECT doc FROM pgjson.main ORDER BY doc->${criteria^} ${order^}, doc->'_id' ${order^} LIMIT ${limit} OFFSET ${offset}", params)
       }
-      return db.manyOrNone('SELECT doc FROM pgjson.main ORDER BY id LIMIT $1 OFFSET $2', [l, f])
+      return db.any('SELECT doc FROM pgjson.main ORDER BY id LIMIT ${limit} OFFSET ${offset}', params)
     })
     .then(function (rows) {
       return rows.map(function (r) { return r.doc })
