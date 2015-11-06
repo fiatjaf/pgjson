@@ -59,7 +59,7 @@ var pgjson = (function () {
     var db = this.db
 
     return this.wait.then(function () {
-      return db.query('SELECT pgjson.upsert($1, $2::jsonb)', [doc._id, doc])
+      return db.func('pgjson.upsert', [doc._id, doc])
     })
     .then(function () {
       return {ok: true, id: doc._id}
@@ -154,7 +154,7 @@ var pgjson = (function () {
     var db = this.db
 
     return this.wait.then(function () {
-      return db.query('SELECT id FROM pgjson.main')
+      return db.any('SELECT id FROM pgjson.main')
     })
     .then(function (rows) {
       return rows.map(function (r) { return r.id })
