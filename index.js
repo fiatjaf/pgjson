@@ -42,22 +42,14 @@ var pgjson = (function () {
     var db = this.db
 
     var ids = []
-    var valuesq = []
-    var valuesv = []
-    for (var i = 0; i < docs.length; i++) {
-      var doc = docs[i]
-      var j = 1 + i*2
+    var values = docs.map(function (doc) {
       var id = cuid()
-      doc._id = id
       ids.push(id)
-      valuesv.push(id)
-      valuesv.push(doc)
-      valuesq.push('($' + j + ',' + '$' + (j+1) + ')')
-    }
-
+      doc._id = id
+      return pgp.as.format("($1, $2)", [id, doc])
+    }).join(',')
     return this.wait.then(function () {
-      sql = "INSERT INTO pgjson.main (id, doc) VALUES " + valuesq.join(',')
-      return db.none(sql, valuesv)
+      return db.none("INSERT INTO pgjson.main (id, doc) VALUES $1^", values)
     }).then(function () {
       return {ok: true, ids: ids}
     }).catch(handle('problem posting docs'))
