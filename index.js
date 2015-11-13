@@ -1,7 +1,11 @@
 var Promise = require('lie')
 var cuid = require('cuid')
+var utils = require('./utils')
 
-var pgp = require('pg-promise')({promiseLib: Promise})
+var pgp = require('pg-promise')({
+  promiseLib: Promise,
+  query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined
+})
 
 var handle = function (message) {
   return function (err) {
@@ -110,28 +114,30 @@ var pgjson = (function () {
 
   pgjson.prototype.query = function (opts) {
     opts = opts || {}
-    var o = opts.orderby
     var db = this.db
     return this.wait.then(function () {
       var params = {
         limit: opts.limit || 1000,
         offset: opts.offset || 0,
-        order: opts.descending ? 'DESC' : 'ASC'
+        order: opts.descending ? 'DESC' : 'ASC',
+        criteria: "'_id'",
+        where: "'1'",
+        condition: '1'
       }
+
+      // orderby
       if (opts.orderby) {
-        var terms = o.split(/[\.[]/).map(function (t) {
-          if (t.slice(-1)[0] == ']') {
-            t = t.slice(0, -1)
-            if (!isNaN(parseInt(t))) {
-              return t
-            }
-          }
-          return "'" + t + "'"
-        })
-        params.criteria = terms.join('->')
-        return db.any("SELECT doc FROM pgjson.main ORDER BY doc->${criteria^} ${order^}, doc->'_id' ${order^} LIMIT ${limit} OFFSET ${offset}", params)
+        params.criteria = utils.dotToPostgresJSON(opts.orderby)
       }
-      return db.any('SELECT doc FROM pgjson.main ORDER BY id LIMIT ${limit} OFFSET ${offset}', params)
+
+      // filter
+      if (opts.filter) {
+        var expr = opts.filter.split('=')
+        params.where = pgp.as.format('doc->$1^', utils.dotToPostgresJSON(expr[0].trim()))
+        params.condition = JSON.stringify(JSON.parse(expr[1].trim()))
+      }
+
+      return db.any("SELECT doc FROM pgjson.main WHERE ${where^} = ${condition} ORDER BY doc->${criteria^} ${order^}, doc->'_id' ${order^} LIMIT ${limit} OFFSET ${offset}", params)
     })
     .then(function (rows) {
       return rows.map(function (r) { return r.doc })

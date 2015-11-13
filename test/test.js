@@ -138,7 +138,7 @@ describe('basic functions', function () {
 
   describe('fancy queries', function () {
     it('should fetch all docs, sorted by id', function (done) {
-      Promise.all([{_id: 'a', word: 'azul'}, {_id: 'b', word: 'banana'}].map(function (doc) {
+      Promise.all([{_id: 'b', word: 'banana'}, {_id: 'a', word: 'azul'}].map(function (doc) {
         return pj.put(doc)
       }))
       .then(function () {
@@ -177,6 +177,38 @@ describe('basic functions', function () {
       .then(function (docs) {
         var ids = docs.map(function (d) { return d._id })
         assert.deepEqual(ids, ['c'])
+      }).then(done).catch(done)
+    })
+
+    it('should filter the docs based on some conditions', function (done) {
+      Promise.all([
+        {_id: 'a', word: 'laranja', props: {coolness: 23}, j: false},
+        {_id: 'b', word: 'arab', props: {coolness: 18}, letters: ['a', 'r']},
+        {_id: 'c', word: 'laec', props: {}, j: false, letters: ['l', 'a']},
+        {_id: 'd', word: 'jalad', j: true, letters: ['j', 'a']},
+        {_id: 'e', word: 'olie', props: {coolness: 18}, letters: ['r', 'l', 'y']},
+      ].map(function (doc) { return pj.put(doc) }))
+      .then(function () {
+        return pj.query({filter: 'word = "laranja"'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['a'])
+        return pj.query({filter: 'props.coolness = 18', orderby: 'letters[1]'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['e', 'b'])
+        return pj.query({orderby: 'j', descending: true, filter: 'j = true'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['d'])
+        return pj.query({filter: 'props = {"coolness": 23}'})
+      })
+      .then(function (docs) {
+        var ids = docs.map(function (d) { return d._id })
+        assert.deepEqual(ids, ['a'])
       }).then(done).catch(done)
     })
   })
