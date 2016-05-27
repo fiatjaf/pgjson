@@ -1,5 +1,5 @@
 var assert = require('chai').assert
-var Promise = require('lie')
+var Promise = require('bluebird')
 var cuid = require('cuid')
 var PGJSON = require('..')
 
