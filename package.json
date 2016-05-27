@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "cuid": "*",
-    "lie": "*",
+    "bluebird": "3.x",
     "pg-promise": "^4.3.3"
   },
   "devDependencies": {
