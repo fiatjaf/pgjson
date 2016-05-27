@@ -174,7 +174,7 @@ var pgjson = (function () {
   pgjson.prototype.init = function () {
       var db = this.db;
       return this.wait.then(function () {
-          return this.db.none(sql.init);
+          return db.none(sql.init);
       })
           .catch(handle('could not initialize pgjson schema, table and functions'));
   }
