@@ -1,6 +1,7 @@
 var Promise = require('bluebird')
 var cuid = require('cuid')
 var utils = require('./utils')
+var sql = require('./sql');
 
 var pgp = require('pg-promise')({
   promiseLib: Promise,
@@ -137,10 +138,10 @@ var pgjson = (function () {
         params.condition = JSON.stringify(JSON.parse(expr[1].trim()))
       }
 
-      return db.any("SELECT doc FROM pgjson.main WHERE ${where^} = ${condition} ORDER BY doc->${criteria^} ${order^}, doc->'_id' ${order^} LIMIT ${limit} OFFSET ${offset}", params)
-    })
-    .then(function (rows) {
-      return rows.map(function (r) { return r.doc })
+      return db.map(sql.main, params, function (row) {
+          return row.doc;
+      });
+
     })
   }
 
@@ -169,39 +170,11 @@ var pgjson = (function () {
   }
 
   pgjson.prototype.init = function () {
-    var db = this.db
-
-    this.wait = this.wait.then(function () {
-      return db.query('CREATE SCHEMA IF NOT EXISTS pgjson')
-    }).then(function () {
-      return db.query('CREATE TABLE IF NOT EXISTS pgjson.main ( id text PRIMARY KEY, doc jsonb )')
-    })
-    .then(function () {
-      return db.query(
-        'CREATE OR REPLACE FUNCTION pgjson.upsert(key text, data jsonb) \n\
-        RETURNS VOID AS \n\
-        $$ \n\
-        BEGIN \n\
-            LOOP \n\
-                UPDATE pgjson.main SET doc = data WHERE id = key; \n\
-                IF found THEN \n\
-                    RETURN; \n\
-                END IF; \n\
-                BEGIN \n\
-                    INSERT INTO pgjson.main(id, doc) VALUES (key, data); \n\
-                    RETURN; \n\
-                EXCEPTION WHEN unique_violation THEN \n\
-                END; \n\
-            END LOOP; \n\
-        END; \n\
-        $$ \n\
-        LANGUAGE plpgsql \n\
-        '
-      )
-    })
-    .catch(handle('could not initialize pgjson schema, table and functions'))
-
-    return this.wait
+      var db = this.db;
+      return this.wait.then(function () {
+          return this.db.none(sql.init);
+      })
+          .catch(handle('could not initialize pgjson schema, table and functions'));
   }
 
   pgjson.prototype.purgeAll = function () {
