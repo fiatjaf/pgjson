@@ -5,9 +5,16 @@ var QueryFile = require('pg-promise').QueryFile;
 // Helper for linking to external query files;
 function sql(file) {
     var path = './sql/' + file;
-    return new QueryFile(path, {minify: true});
+    var options = {
+        params: {
+            schema: 'pgjson'
+        },
+        minify: true
+    };
+    return new QueryFile(path, options);
 }
 
 module.exports = {
-    create: sql('init.sql')
+    init: sql('init.sql'),
+    main: sql('main.sql')
 };
