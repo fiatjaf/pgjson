@@ -6,7 +6,7 @@
   "dependencies": {
     "cuid": "*",
     "lie": "*",
-    "pg-promise": "^2.1.0"
+    "pg-promise": "^4.3.3"
   },
   "devDependencies": {
     "chai": "^3.3.0",
