@@ -9,5 +9,5 @@ function sql(file) {
 }
 
 module.exports = {
-    create: sql('create.sql')
+    create: sql('init.sql')
 };
