@@ -1,4 +1,4 @@
-var Promise = require('lie')
+var Promise = require('bluebird')
 var cuid = require('cuid')
 var utils = require('./utils')
 
