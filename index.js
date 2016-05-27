@@ -1,3 +1,5 @@
+'use strict';
+
 var Promise = require('bluebird')
 var cuid = require('cuid')
 var utils = require('./utils')
@@ -6,7 +8,7 @@ var sql = require('./sql');
 var pgp = require('pg-promise')({
   promiseLib: Promise,
   query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined
-})
+});
 
 var handle = function (message) {
   return function (err) {
