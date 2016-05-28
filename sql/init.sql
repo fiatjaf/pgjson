@@ -1,5 +1,7 @@
 -- Initializing the database
 
+CREATE SCHEMA IF NOT EXISTS pgjson;
+
 CREATE TABLE IF NOT EXISTS pgjson.main(
     id text PRIMARY KEY,
     doc jsonb
@@ -23,4 +25,3 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-
