@@ -1,6 +1,6 @@
 -- Main query
 
-SELECT doc FROM ${schema~}.main
+SELECT doc FROM pgjson.main
 WHERE ${where^} = ${condition}
 ORDER BY doc->${criteria^} ${order^}, doc->'_id' ${order^}
 LIMIT ${limit} OFFSET ${offset}
