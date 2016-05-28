@@ -7,7 +7,11 @@ var sql = require('./sql');
 
 var pgp = require('pg-promise')({
   promiseLib: Promise,
-  query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined
+  query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined,
+  error: function(err, e){
+    console.log("ERROR:", err.message || err);
+    console.log("QUERY:", e.query);
+  }
 });
 
 var handle = function (message) {
