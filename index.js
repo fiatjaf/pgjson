@@ -180,7 +180,9 @@ var pgjson = (function () {
              });
           
       })
-          .catch(handle('could not initialize pgjson schema, table and functions'));
+          .catch(function(error){
+            console.log("ERROR:", error);
+          });
   }
 
   pgjson.prototype.purgeAll = function () {
