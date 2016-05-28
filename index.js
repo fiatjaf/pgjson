@@ -7,14 +7,7 @@ var sql = require('./sql');
 
 var pgp = require('pg-promise')({
   promiseLib: Promise,
-/*  query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined,*/
-  query: function(e){
-    console.log("QUERY:", e.query);
-  },
-  error: function(err, e){
-    console.log("ERROR:", err.message || err);
-    console.log("Q-PARAM:", e.query);
-  }
+  query: process.env.DEBUG ? function (e) { console.log(e.query) } : undefined
 });
 
 var handle = function (message) {
@@ -181,14 +174,10 @@ var pgjson = (function () {
   pgjson.prototype.init = function () {
       var db = this.db;
       return this.wait.then(function () {
-          return db.none('CREATE SCHEMA IF NOT EXISTS pgjson')
-             .then(function(){
-                 return db.none(sql.init);       
-             });
-          
+          return db.none(sql.init);
       })
           .catch(function(error){
-            console.log("ERROR:", error);
+            console.log(handle('could not initialize pgjson schema, table and functions'));
           });
   }
 
