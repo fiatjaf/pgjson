@@ -2,24 +2,24 @@
 
 BEGIN;
 
-CREATE SCHEMA IF NOT EXISTS ${schema~};
+CREATE SCHEMA IF NOT EXISTS pgjson;
 
-CREATE TABLE IF NOT EXISTS ${schema~}.main(
+CREATE TABLE IF NOT EXISTS pgjson.main(
     id text PRIMARY KEY,
     doc jsonb
 );
 
-CREATE OR REPLACE FUNCTION ${schema~}.upsert(key text, data jsonb)
+CREATE OR REPLACE FUNCTION pgjson.upsert(key text, data jsonb)
 RETURNS VOID AS
 $$
 BEGIN
     LOOP
-        UPDATE ${schema~}.main SET doc = data WHERE id = key;
+        UPDATE pgjson.main SET doc = data WHERE id = key;
         IF found THEN
             RETURN;
         END IF;
         BEGIN
-            INSERT INTO ${schema~}.main(id, doc) VALUES (key, data);
+            INSERT INTO pgjson.main(id, doc) VALUES (key, data);
             RETURN;
         EXCEPTION WHEN unique_violation THEN
         END;
