@@ -1,7 +1,5 @@
 -- Initializing the database
 
-BEGIN;
-
 CREATE SCHEMA IF NOT EXISTS pgjson;
 
 CREATE TABLE IF NOT EXISTS pgjson.main(
@@ -28,4 +26,3 @@ END;
 $$
 LANGUAGE plpgsql;
 
-COMMIT;
