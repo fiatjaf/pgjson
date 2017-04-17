@@ -20,11 +20,9 @@ A simple, zero-config, API for saving and retrieving JSON documents in a Postgre
 var Promise = require('bluebird')
 var db = new (require('pgjson'))('postgres:///db')
 
-Promise.resolve().then(function () {
-  return db.post({
-    name: 'tomato',
-    uses: ['tomato juice']
-  })
+db.post({
+  name: 'tomato',
+  uses: ['tomato juice']
 })
 .then(function (res) {
   console.log(res) /* {ok: true, id: 'xwkfi23syw'} */
