@@ -10,9 +10,8 @@ describe('basic functions', function () {
     pj = new PGJSON(process.env.TEST_DATABASE_URL)
   })
 
-  beforeEach(function () {
-    pj.purgeAll()
-    pj.init()
+  beforeEach(function (done) {
+    pj.init().then(done);
   })
 
   describe('CRUD', function () {
