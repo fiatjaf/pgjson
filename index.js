@@ -177,6 +177,9 @@ var pgjson = (function () {
       return db.query('CREATE TABLE IF NOT EXISTS pgjson.main ( id text PRIMARY KEY, doc jsonb )')
     })
     .then(function () {
+      return db.query('CREATE INDEX IF NOT EXISTS pgjson_gin on pgjson.main using gin (doc jsonb_path_ops)')
+    })
+    .then(function () {
       return db.query(
         'CREATE OR REPLACE FUNCTION pgjson.upsert(key text, data jsonb) \n\
         RETURNS VOID AS \n\
